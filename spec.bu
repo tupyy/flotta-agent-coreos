@@ -83,7 +83,7 @@ storage:
       overwrite: true
       contents:
         inline: |
-          IPADDRESS flotta.io
+          IPADDRESS DOMAIN
     # linger root
     - path: /etc/systemd/logind.conf
       overwrite: true
