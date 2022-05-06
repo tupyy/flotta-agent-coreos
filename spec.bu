@@ -83,7 +83,7 @@ storage:
       overwrite: true
       contents:
         inline: |
-          192.168.1.47 flotta.io
+          IPADDRESS flotta.io
     # linger root
     - path: /etc/systemd/logind.conf
       overwrite: true

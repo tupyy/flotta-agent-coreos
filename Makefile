@@ -1,3 +1,6 @@
+# Initial version: https://github.com/deuill/coreos-home-server
+# Modifed: cosmin
+
 # CoreOS options.
 STREAM    := stable
 VERSION   := 35.20220227.3.0
@@ -8,7 +11,8 @@ IMAGE_URI := https://builds.coreos.fedoraproject.org/prod/streams/
 VERBOSE :=
 ROOTDIR := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 TMPDIR  := $(shell ls -d /var/tmp/fcos-build.???? 2>/dev/null || mktemp -d /var/tmp/fcos-build.XXXX && chmod 0755 /var/tmp/fcos-build.????)/
-ADDRESS =  $(shell ip -o route get 1 | awk '{for (i=1; i<=NF; i++) {if ($$i == "src") {print $$(i+1); exit}}}')
+IPADDRESS =  $(shell ip -o route get 1 | awk '{for (i=1; i<=NF; i++) {if ($$i == "src") {print $$(i+1); exit}}}')
+DOMAIN ?= "flotta.io"
 
 # Build-time dependencies.
 BUTANE      ?= $(call find-cmd,butane)
@@ -69,6 +73,8 @@ $(TMPDIR)deploy/%: $(ROOTDIR)%
 $(TMPDIR)deploy/%.ign: $(ROOTDIR)%.bu
 	$Q install -d $(@D)
 	$Q $(BUTANE) --pretty --strict --files-dir $(TMPDIR)deploy -o $@ $<
+	@sed -i -e "s/IPADDRESS/$(IPADDRESS)/g" $@
+	@sed -i -e "s/DOMAIN/$(DOMAIN)/g" $@
 
 # Download and, optionally, extract Fedora CoreOS installation image.
 $(TMPDIR)images/fedora-coreos-$(VERSION)-%:
@@ -79,12 +85,6 @@ $(TMPDIR)images/fedora-coreos-$(VERSION)-%:
 	$Q $(GPG) --verify $@.sig
 	$Q test $(suffix $(@F)) = .xz && xz --decompress $@ || true
 	$Q touch $@
-
-# Generate Makefile dependencies from `local:` definitions in BUTANE files.
-$(TMPDIR)make.depend: $(shell find $(ROOTDIR) -name '*.bu' -type f 2>/dev/null)
-	@printf "# Automatic prerequisites for Fedora CoreOS configuration." > $@
-	@printf "$(foreach i,$^,\n$(patsubst $(ROOTDIR)%.bu,$(TMPDIR)deploy/%.ign, \
-	         $(i)): $(addprefix $(TMPDIR)deploy/, $(shell awk -F '[ ]+local:[ ]*' '/^[ ]+(-[ ]+)?local:/ {print $$2}' $(i))))" >> $@
 
 # Show help if empty or invalid target has been given.
 .DEFAULT:
