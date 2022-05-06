@@ -2,6 +2,10 @@
 
 This repo contains ignition file to install **flotta-agent** on Fedora CoreOS.
 
+## Prerequisites
+
+Export certificates with `make get-certs` and copy them to `files` folder
+
 ## Commands
 
 - `make deploy` is creating a FCOS instance and deploying `flotta-agent`
