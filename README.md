@@ -4,7 +4,8 @@ This repo contains ignition file to install **flotta-agent** on Fedora CoreOS.
 
 ## Prerequisites
 
-Export certificates with `make get-certs` and copy them to `files` folder
+Export certificates with `make get-certs` and copy them to `files` folder.
+If you want to have ssh access you need to copy the public key to `ign` file.
 
 ## Commands
 
