@@ -1,0 +1,14 @@
+[Unit]
+Description=Flotta setup service
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=!/usr/lib/systemd/system/yggdrasild.service
+
+[Service]
+Type=oneshot
+ExecStartPre=curl https://copr.fedorainfracloud.org/coprs/project-flotta/flotta/repo/fedora-35/project-flotta-flotta-fedora-35.repo -o /etc/yum.repos.d/project-flotta.repo
+ExecStart=rpm-ostree install node_exporter yggdrasil flotta-agent
+ExecStopPost=systemctl reboot
+
+[Install]
+WantedBy=multi-user.target
