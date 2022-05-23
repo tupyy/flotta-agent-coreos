@@ -9,7 +9,7 @@ If you want to have ssh access you need to copy the public key to `ign` file.
 
 ## Commands
 
-- `make deploy` is creating a FCOS instance and deploying `flotta-agent`
+- `make deploy` is creating a FCOS instance with the default vm name and deploying `flotta-agent`. If you want to use another name just set `VM_NAME=<instance_name> make deploy`.
 - `make destroy` destroy the vm
 - `make clean` clean the temporary files
 
