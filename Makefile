@@ -24,7 +24,7 @@ VIRTINSTALL ?= $(call find-cmd,virt-install) --connect=qemu:///system
 NC          ?= $(call find-cmd,nc) -vv -r -l
 
 ## Prepares and deploys CoreOS release for local, virtual environment.
-deploy: $(TMPDIR)images/fedora-coreos-$(VERSION)-qemu.$(ARCH).qcow2.xz $(TMPDIR)deploy/spec.ign
+deploy: $(TMPDIR)images/fedora-coreos-$(VERSION)-qemu.$(ARCH).qcow2.xz $(TMPDIR)deploy/spec.ign $(TMPDIR)deploy/
 	@printf "Preparing virtual environment...\n"
 	$Q $(VIRTINSTALL) --import --name="$(VM_NAME)" --os-variant=fedora34 \
 	                  --graphics=none --vcpus=2 --memory=2048 \
@@ -55,11 +55,6 @@ help:
 	@awk -F ':|##' '/^##/ {c=$$2; getline; printf "$(BLUE)%16s$(RESET)%s\n", $$1, c}' $(MAKEFILE_LIST)
 	@printf "\n"
 
-# Copy host configuration in plain-text. Mainly used for development hosts.
-$(TMPDIR)deploy/$(HOST).env: $(ROOTDIR)/virtual.env
-	$Q install -d $(@D)
-	$Q cp -f $< $@
-
 # Copy directory tree if any of the files within are newer than the target directory.
 $(TMPDIR)deploy/%/: $(shell find $(ROOTDIR)$* -type f -newer $(TMPDIR)deploy/$* 2>/dev/null)
 	$Q install -d $(dir $(@D))
@@ -86,6 +81,12 @@ $(TMPDIR)images/fedora-coreos-$(VERSION)-%:
 	$Q $(GPG) --verify $@.sig
 	$Q test $(suffix $(@F)) = .xz && xz --decompress $@ || true
 	$Q touch $@
+
+# Generate Makefile dependencies from `local:` definitions in BUTANE files.
+$(TMPDIR)make.depend: $(shell find $(ROOTDIR) -name '*.bu' -type f 2>/dev/null)
+	@printf "# Automatic prerequisites for Fedora CoreOS configuration." > $@
+	@printf "$(foreach i,$^,\n$(patsubst $(ROOTDIR)%.bu,$(TMPDIR)deploy/%.ign, \
+	         $(i)): $(addprefix $(TMPDIR)deploy/, $(shell awk -F '[ ]+local:[ ]*' '/^[ ]+(-[ ]+)?local:/ {print $$2}' $(i))))" >> $@
 
 # Show help if empty or invalid target has been given.
 .DEFAULT:

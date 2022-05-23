@@ -36,8 +36,6 @@ storage:
   trees:
     - path: /etc/systemd/system
       local: systemd/
-    - path: /etc/edgedevice
-      local: service/
   directories:
     - path: /etc/pki/consumer
       mode: 0700
