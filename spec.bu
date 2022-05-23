@@ -78,7 +78,7 @@ storage:
           # Raise console message logging level from DEBUG (7) to WARNING (4)
           # to hide audit messages from the interactive console.
           kernel.printk=4
-    # Set hostname
+    # Set operator hostname
     - path: /etc/hosts
       overwrite: true
       contents:
