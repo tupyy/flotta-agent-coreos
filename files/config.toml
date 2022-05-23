@@ -4,5 +4,4 @@ key-file = "/etc/pki/consumer/key.pem"
 ca-root = ["/etc/pki/consumer/ca.pem"]
 path-prefix = "api/flotta-management/v1"
 protocol = "http"
-client-id = "coreos"
 server = "flotta.io:8043"

@@ -13,6 +13,7 @@ ROOTDIR := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 TMPDIR  := $(shell ls -d /var/tmp/fcos-build.???? 2>/dev/null || mktemp -d /var/tmp/fcos-build.XXXX && chmod 0755 /var/tmp/fcos-build.????)/
 IPADDRESS =  $(shell ip -o route get 1 | awk '{for (i=1; i<=NF; i++) {if ($$i == "src") {print $$(i+1); exit}}}')
 DOMAIN ?= "flotta.io"
+VM_NAME ?= fcos-$(STREAM)-$(VERSION)-$(ARCH)
 
 # Build-time dependencies.
 BUTANE      ?= $(call find-cmd,butane)
@@ -25,15 +26,15 @@ NC          ?= $(call find-cmd,nc) -vv -r -l
 ## Prepares and deploys CoreOS release for local, virtual environment.
 deploy: $(TMPDIR)images/fedora-coreos-$(VERSION)-qemu.$(ARCH).qcow2.xz $(TMPDIR)deploy/spec.ign
 	@printf "Preparing virtual environment...\n"
-	$Q $(VIRTINSTALL) --import --name="fcos-$(STREAM)-$(VERSION)-$(ARCH)" --os-variant=fedora34 \
+	$Q $(VIRTINSTALL) --import --name="$(VM_NAME)" --os-variant=fedora34 \
 	                  --graphics=none --vcpus=2 --memory=2048 \
 	                  --disk="size=10,backing_store=$(TMPDIR)images/fedora-coreos-$(VERSION)-qemu.$(ARCH).qcow2" \
 	                  --qemu-commandline="-fw_cfg name=opt/com.coreos/config,file=$(TMPDIR)deploy/spec.ign"
 
 ## Stop and remove virtual environment for CoreOS.
 destroy:
-	$Q $(VIRSH) destroy fcos-$(STREAM)-$(VERSION)-$(ARCH) || true
-	$Q $(VIRSH) undefine --remove-all-storage fcos-$(STREAM)-$(VERSION)-$(ARCH) || true
+	$Q $(VIRSH) destroy $(VM_NAME) || true
+	$Q $(VIRSH) undefine --remove-all-storage $(VM_NAME) || true
 
 ## Remove deployment configuration files required for build.
 clean:
